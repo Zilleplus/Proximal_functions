@@ -24,3 +24,11 @@
 #ifndef MACHINE_ACCURACY
     #define MACHINE_ACCURACY DBL_EPSILON
 #endif 
+
+#ifndef FALSE
+    #define FALSE 0
+#endif 
+
+#ifndef TRUE
+    #define TRUE 1
+#endif

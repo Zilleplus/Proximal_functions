@@ -7,13 +7,12 @@ struct indicator_box_square_function{
     unsigned int dimension;
     real_t lower_bound;
     real_t upper_bound;
-    real_t (*g)(const real_t* input);
-    void (*proxg)(real_t* input);
     real_t inf;
 };
 
-int constraint_functions_init_box(struct indicator_box_square_function** box_function,\
-    unsigned int dimension_,real_t lower_bound,real_t upper_bound);
-int constraint_functions_cleanup_box(struct indicator_box_square_function* box_function);
+real_t proxg_indicator_box_square_function(const struct indicator_box_square_function* data,real_t* input);
+
+struct indicator_box_square_function* constraint_functions_init_box(\
+    const unsigned int dimension_,const real_t lower_bound,const real_t upper_bound,const real_t value_inf);
 
 #endif
