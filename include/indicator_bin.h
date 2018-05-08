@@ -10,7 +10,7 @@ struct indicator_bin{
 };
 
 struct indicator_bin* init_indicator_bin(const unsigned int dimension,const real_t lower_bound,const real_t upper_bound);
-real_t prox_indicator_bin(const struct indicator_bin* data,real_t* input);
+real_t prox_indicator_bin(const struct indicator_bin* data,real_t* input, real_t gamma);
 
 
 #endif

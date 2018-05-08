@@ -15,9 +15,9 @@ struct indicator_box* init_indicator_box(\
     return data;
 }
 
-real_t prox_indicator_box(const struct indicator_box* data,real_t* input){
+real_t prox_indicator_box(const struct indicator_box* data,real_t* input, real_t gamma){
     unsigned int i;
-    real_t g=0; /* the new pont x is by definition allway's inside the box */
+    real_t g=0.*gamma; /* the new pont x is by definition allway's inside the box */
 
     for (i = 0; i < data->dimension; i++)
     {

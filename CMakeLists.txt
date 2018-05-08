@@ -26,6 +26,7 @@ add_subdirectory(test)
 # Test the functionality
 enable_testing()
 
-# Tests on the matrix/vector operations
+# Tests on the matrix/vector operations 
 add_test(NAME indicator_box_test COMMAND  test/indicator_box_test)
 add_test(NAME indicator_bin_test COMMAND  test/indicator_bin_test)
+add_test(NAME quicksort_test COMMAND  test/quicksort_test)

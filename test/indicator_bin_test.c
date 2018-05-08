@@ -7,7 +7,8 @@ static struct indicator_bin* data;
 
 static int check_g(real_t* x,const real_t g_x_solution){
     real_t initial_value_x[2];initial_value_x[0]=x[0];initial_value_x[1]=x[1]; /* save the inital value, used with printf */
-    real_t g_x=prox_indicator_bin(data,x);
+    real_t gamma=0;
+    real_t g_x=prox_indicator_bin(data,x,gamma);
 
     if(g_x_solution!=g_x){
         printf("Error Testing g(x), g([%f;%f])=%f -> theoretical g(x)=%f \n",initial_value_x[0],initial_value_x[1],g_x,g_x_solution);
@@ -19,7 +20,8 @@ static int check_g(real_t* x,const real_t g_x_solution){
 static int check_proxg(real_t* x,const real_t* proxg_x_solution){
     unsigned int i;
     real_t initial_value_x[2];initial_value_x[0]=x[0];initial_value_x[1]=x[1]; /* save the inital value, used with printf */
-    prox_indicator_bin(data,x);
+    real_t gamma=0;
+    prox_indicator_bin(data,x,gamma);
     unsigned char solution_is_ok=TRUE;
     for (i = 0; i < data->dimension; i++){
         if(ABS(x[i]-proxg_x_solution[i])>(1e0)*MACHINE_ACCURACY){
