@@ -12,7 +12,7 @@ struct indicator_intersection* init_indicator_intersection_hyperplane(\
     if(data==NULL) return NULL;
 
     data->dimension=dimension;
-    allocate_cqk_problem(unsigned dimension, cqk_problem *restrict p);
+    allocate_cqk_problem(unsigned dimension, cqk_problem *p);
     data->problem = p;
 	
     return data;
@@ -23,7 +23,7 @@ real_t prox_indicator_intersection_hyperplane(const struct indicator_intersectio
     real_t g=0.*gamma; /* initialize the value of function at prox point  */
     
     
-    newton(cqk_problem *restrict p, double *input, double *input);
+    newton(cqk_problem *p, NULL, double *input);
     return g;
 }
 

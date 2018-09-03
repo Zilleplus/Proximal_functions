@@ -12,7 +12,7 @@
  * Copyright: Paulo J. S. Silva <pjssilva@gmail.com> 2012.
  */
 
-#include <math.h>
+#include "../../globals/globals.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "cont_quad_knapsack.h"
@@ -31,7 +31,7 @@
  * Output: cqk_problem *p: pointer to the cqk_problem whose memory is
  *     being allocated.
  */
-void allocate_cqk_problem(unsigned n, cqk_problem *restrict p) {
+void allocate_cqk_problem(unsigned n, cqk_problem *p) {
     p->n = n;
     p->d = (double *) malloc(p->n*sizeof(double));
     p->a = (double *) malloc(p->n*sizeof(double));
@@ -55,7 +55,7 @@ void allocate_cqk_problem(unsigned n, cqk_problem *restrict p) {
  *         memory, at output all the memory will be freed and the pointers
  *         in the cqk_problem structure will point to NULL.
  */
-void free_cqk_problem(cqk_problem *restrict p) {
+void free_cqk_problem(cqk_problem *p) {
     p->n = 0;
     free(p->d);
     p->d = NULL;
@@ -95,15 +95,9 @@ void free_cqk_problem(cqk_problem *restrict p) {
  *         initialized as all. 
  * 
  * Return value: the desired estimate.
- * 
- * Obs: The multiplier is computed using the approximate to estimate
- * the active face obtained from the given solution. It returns the
- * mulplier associated to the problem of projecting into the
- * hyperplane within this face as suggested by the variable fixing
- * methods.
  */
-double initial_multiplier(cqk_problem *restrict p, double *restrict x,
-                          double *restrict slopes, double *sum_slopes,
+double __initial_multiplier(cqk_problem *p, double *x,
+                          double *slopes, double *sum_slopes,
                           unsigned *ind) {
 
     double r = p->r;
@@ -112,7 +106,8 @@ double initial_multiplier(cqk_problem *restrict p, double *restrict x,
     double pre_slope;
     /* Estimate the initial multiplier from a given solution. */
     if (x != NULL) {
-        for (unsigned i = 0; i < p->n; ++i) {
+        unsigned int i;
+        for (i = 0; i < p->n; ++i) {
             ind[i] = i;
             pre_slope = p->b[i]/p->d[i];
             slopes[i] = pre_slope*p->b[i];
@@ -128,7 +123,8 @@ double initial_multiplier(cqk_problem *restrict p, double *restrict x,
            try again now ignoring all the bounds. */
         if (*sum_slopes == 0.0) {
             r = p->r;
-            for(unsigned i = 0; i < p->n; ++i) {
+            unsigned int i;
+            for(i = 0; i < p->n; ++i) {
                 pre_slope = p->b[i]/p->d[i];
                 sum_cts += pre_slope*p->a[i];
                 *sum_slopes += pre_slope*p->b[i];
@@ -137,7 +133,8 @@ double initial_multiplier(cqk_problem *restrict p, double *restrict x,
     }
     else {
         r = p->r;
-        for(unsigned i = 0; i < p->n; ++i) {
+        unsigned int i;
+        for(i = 0; i < p->n; ++i) {
             ind[i] = i;
             pre_slope = p->b[i]/p->d[i];
             sum_cts += pre_slope*p->a[i];
@@ -168,14 +165,15 @@ double initial_multiplier(cqk_problem *restrict p, double *restrict x,
  *     double *restrict phi: phi(lamda) - r.
  *     double *restrict deriv: derivative of phi (or an upper bound).
  */
-void newton_phi(cqk_problem *restrict p, unsigned n, 
-                unsigned *restrict ind, double r, double *restrict slopes, 
-                double lambda, double *restrict x, double *restrict phi, 
-                double *restrict deriv) {
+static void __newton_phi(cqk_problem *p, unsigned n, 
+                unsigned *ind, double r, double *slopes, 
+                double lambda, double *x, double *phi, 
+                double *deriv) {
     *phi = -r;
     double abs_phi = r > 0 ? r : -r;
     *deriv = 0.0;
-    for (unsigned i = 0; i < n; ++i) {
+    unsigned int i;
+    for (i = 0; i < n; ++i) {
         /* Actual index after indirection. */
         unsigned ii = ind[i]; 
         double new_x = (p->a[ii] + lambda*p->b[ii])/p->d[ii];
@@ -198,7 +196,7 @@ void newton_phi(cqk_problem *restrict p, unsigned n,
 
     /* Verify if phi was estimated to be sufficiently close to zero and
        zero it to stop the method. */
-    if (fabs(*phi) < PREC*abs_phi)
+    if (ABS(*phi) < PREC*abs_phi)
         *phi = 0.0;
 }
 
@@ -217,12 +215,13 @@ void newton_phi(cqk_problem *restrict p, unsigned n,
  * Return: First positive breakpoint to the right of lambda, if it
  *     exits. Or lambda otherwise.
  */
-double breakpoint_to_the_right(cqk_problem *restrict p, unsigned n, 
-                               unsigned *restrict ind, double lambda) {
+static double __breakpoint_to_the_right(cqk_problem *p, unsigned n, 
+                               unsigned *ind, double lambda) {
     /* Start at plus infinity */
     double next_break = INVALIDLAMBDA;
-    
-    for (unsigned i = 0; i < n; ++i) {
+    unsigned int i;
+
+    for (i = 0; i < n; ++i) {
         /* Actual index after indirection. */
         unsigned ii = ind[i];
         /* Low (positive) breakpoint associated to the current variable. */
@@ -249,12 +248,12 @@ double breakpoint_to_the_right(cqk_problem *restrict p, unsigned n,
  * Return: First negative breakpoint to the left of lambda, if it
  *     exits. Or lambda otherwise.
  */
-double breakpoint_to_the_left(cqk_problem *restrict p, unsigned n, 
-                              unsigned *restrict ind, double lambda) {
+static double __breakpoint_to_the_left(cqk_problem *p, unsigned n, 
+                              unsigned *ind, double lambda) {
     /* Start at minus infinity */
     double next_break = -INVALIDLAMBDA;
-    
-    for (unsigned i = 0; i < n; ++i) {
+    unsigned int i;
+    for (i = 0; i < n; ++i) {
         /* Actual index after indirection. */
         unsigned ii = ind[i];
         /* Up (negative) breakpoint associated to the current variable. */
@@ -281,12 +280,13 @@ double breakpoint_to_the_left(cqk_problem *restrict p, unsigned n,
  *     unsigned *restrict ind: new indices of the free variables.
  *     double *restrict r: updated rhs.
  */
-void newton_fix(double phi, cqk_problem *restrict p, double *restrict x, 
-                unsigned *restrict n, unsigned *restrict ind, 
-                double *restrict r) {
+static void __newton_fix(double phi, cqk_problem *p, double *x, 
+                unsigned *n, unsigned *ind, 
+                double *r) {
     unsigned len = 0;
+    unsigned int i;
     if (phi > 0.0)
-        for (unsigned i = 0; i < *n; ++i) {
+        for (i = 0; i < *n; ++i) {
             /* Actual index after indirection. */
             unsigned ii = ind[i];
 
@@ -299,7 +299,7 @@ void newton_fix(double phi, cqk_problem *restrict p, double *restrict x,
             }
         }
     else
-        for (unsigned i = 0; i < *n; ++i) {
+        for (i = 0; i < *n; ++i) {
             /* Actual index after indirection. */
             unsigned ii = ind[i];
 
@@ -326,7 +326,7 @@ void newton_fix(double phi, cqk_problem *restrict p, double *restrict x,
  *
  * Return value: the new point after the secant step.
  */
-double secant_step(bracket *restrict interval) {
+static double __secant_step(bracket *interval) {
     double secant_point = interval->neg_lambda - interval->negPhi*
         (interval->pos_lambda - interval->neg_lambda) / 
         (interval->posPhi - interval->negPhi);
@@ -357,11 +357,11 @@ double secant_step(bracket *restrict interval) {
  *     solution, -1 in case of failure, -2 in case of infeasible
  *     problem.
  */
-int newton(cqk_problem *restrict p, double *x0, double *x) {
+int newton(cqk_problem *p, double *x0, double *x) {
     /* Allocate working area */
     unsigned n = p->n;
-    unsigned *restrict ind = (unsigned *) malloc(n*sizeof(unsigned));
-    double *restrict slopes = (double *) malloc(n*sizeof(double));
+    unsigned *ind = (unsigned *) malloc(n*sizeof(unsigned));
+    double *slopes = (double *) malloc(n*sizeof(double));
     if (!ind || !slopes) {
         fprintf(stderr, "Memory allocation error, line %d, file %s\n",
                 __LINE__, __FILE__);
@@ -379,8 +379,8 @@ int newton(cqk_problem *restrict p, double *x0, double *x) {
     interval.neg_lambda = -INVALIDLAMBDA;
     interval.pos_lambda =  INVALIDLAMBDA;
     
-    lambda = initial_multiplier(p, x0, slopes, &sum_slopes, ind);
-    newton_phi(p, n, ind, r, slopes, lambda, x, &phi, &deriv);
+    lambda = __initial_multiplier(p, x0, slopes, &sum_slopes, ind);
+    __newton_phi(p, n, ind, r, slopes, lambda, x, &phi, &deriv);
     DEBUG_PRINT("Initial Lambda=%e, phi - r = %e\n", lambda, phi);
 
     /* Iteration */
@@ -392,13 +392,13 @@ int newton(cqk_problem *restrict p, double *x0, double *x) {
         else
             interval.pos_lambda = lambda;
         if ( (interval.pos_lambda - interval.neg_lambda) < BRACKETPREC*
-             MAX(fabs(interval.neg_lambda), fabs(interval.pos_lambda)) ) { 
+             MAX(ABS(interval.neg_lambda), ABS(interval.pos_lambda)) ) { 
             phi = 0.0;
             break;
         }
             
         /* Try to fix variables */
-        newton_fix(phi, p, x, &n, ind, &r);
+        __newton_fix(phi, p, x, &n, ind, &r);
 
         /* Do the Newton step if possible. */
         if (deriv != 0.0) {
@@ -424,12 +424,12 @@ int newton(cqk_problem *restrict p, double *x0, double *x) {
                    bracket interval. */
                 if (phi < 0.0) {
                     interval.negPhi = phi;
-                    newton_phi(p, n, ind, r, slopes, interval.pos_lambda, 
+                    __newton_phi(p, n, ind, r, slopes, interval.pos_lambda, 
                                x, &interval.posPhi, &deriv);
                 }
                 else {
                     interval.posPhi = phi;
-                    newton_phi(p, n, ind, r, slopes, interval.neg_lambda,
+                    __newton_phi(p, n, ind, r, slopes, interval.neg_lambda,
                                x, &interval.negPhi, &deriv);
                 }
                 /* Computing newton_phi is a O(n) operation. Count it
@@ -437,16 +437,16 @@ int newton(cqk_problem *restrict p, double *x0, double *x) {
                 ++n_iters;
 
                 /* Compute the secant step */
-                lambda = secant_step(&interval);
+                lambda = __secant_step(&interval);
 
                 /* Eliminate at least one break-point */
                 double new_bp;
                 if (phi < 0.0) {
-                    new_bp = breakpoint_to_the_right(p, n, ind, old_lambda);
+                    new_bp = __breakpoint_to_the_right(p, n, ind, old_lambda);
                     lambda = MAX(lambda, new_bp);
                 }
                 else {
-                    new_bp = breakpoint_to_the_left(p, n, ind, old_lambda);
+                    new_bp = __breakpoint_to_the_left(p, n, ind, old_lambda);
                     lambda = MIN(lambda, new_bp);
                 }
                 /* Another O(n) operation */
@@ -463,9 +463,9 @@ int newton(cqk_problem *restrict p, double *x0, double *x) {
             /* Find the breakpoint close to lambda in the right
                direction. */
             if (phi < 0.0) 
-                lambda = breakpoint_to_the_right(p, n, ind, lambda);
+                lambda = __breakpoint_to_the_right(p, n, ind, lambda);
             else
-                lambda = breakpoint_to_the_left(p, n, ind, lambda);
+                lambda = __breakpoint_to_the_left(p, n, ind, lambda);
             DEBUG_PRINT("New lambda: %e\n", lambda);
 
             /* Since searching for the close breakpoint is a O(n)
@@ -481,7 +481,7 @@ int newton(cqk_problem *restrict p, double *x0, double *x) {
         }
 
         /* Compute the function values and derivatives */
-        newton_phi(p, n, ind, r, slopes, lambda, x, &phi, &deriv);
+        __newton_phi(p, n, ind, r, slopes, lambda, x, &phi, &deriv);
         DEBUG_PRINT("Iter %d - lambda = %e, phi - r = %e\n", 
                     n_iters, lambda, phi);
         ++n_iters;

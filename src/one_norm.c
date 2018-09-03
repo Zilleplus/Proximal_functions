@@ -11,16 +11,38 @@ struct one_norm* init_one_norm(const unsigned int dimension,const real_t mu){
     data->dimension=dimension;
     data->mu=mu;
 
+
+    int *cache;
+    double sum;
+
+    cache = (real_t*)malloc(data->dimension*sizeof(real_t));
+    data->cache = cache;
+    data->sum  = 0;
+    free(cache);
+
     return data;
 }
 
 static real_t sign_x(real_t x) { return x<0 ? -1 : x>0 ? 1 : x;}
 
-real_t prox_one_norm(const struct one_norm* data,real_t* input, real_t gamma){
-    /* prox=sign(x)*,ax{|x_i|-\lambda,0} */
+real_t  prox_one_norm(const struct one_norm* data, real_t* input, real_t gamma){
+    /* prox=sign(x)*max{|x_i|-\lambda,0} */
+    
+    real_t g = 0.*lamda; 
+    
+    lamda    = data->mu * gamma;
+    
+    
     unsigned int i;
     for (i = 0; i < data->dimension; i++){
-        /* TODO: implement prox */
+        input[i] = sign_x(input)*MAX(0.0, ABS(input[i]) - lamda);
+        data->sum += *(data->cache + input[i]); 
     }
-    return 0; /* TODO: return proper value for g(x_{bar}) */
+    
+    g = data->mu*data->sum; 
+    
+    return g;
 }
+
+
+
