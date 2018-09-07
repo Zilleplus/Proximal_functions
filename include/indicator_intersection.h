@@ -13,11 +13,10 @@ struct indicator_intersection{
 };
 
 
-//box-halfspace ingredients
 struct indicator_bin* init_indicator_intersection_hyperplane(\
-    const unsigned int dimension_,const real_t lower_bound,const real_t upper_bound, const halfspace_rhs);
+    const unsigned int dimension_,const real_t lower_bound,const real_t upper_bound, const real_t hyperplane_rhs);
 
-//prox box-halfspace
+
 real_t prox_indicator_intersection_hyperplane(const struct indicator_intersection* data,real_t* input, real_t gamma);
 
 #endif

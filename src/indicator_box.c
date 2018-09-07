@@ -29,6 +29,7 @@ real_t prox_indicator_box(const struct indicator_box* data,real_t* input, real_t
         {
             input[i]=data->upper_bound;
         }
+        
     }
     
     return g;

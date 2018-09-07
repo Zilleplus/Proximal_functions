@@ -5,7 +5,7 @@
 
 static struct indicator_box* data;
 
-static int check_g(real_t* x,const real_t g_x_solution){
+static int check_g_value_at_prox_of_x(real_t* x,const real_t g_x_solution){
     real_t initial_value_x[2];initial_value_x[0]=x[0];initial_value_x[1]=x[1]; /* save the inital value, used with printf */
     real_t gamma=0;
     real_t g_x=prox_indicator_box(data,x,gamma);
@@ -17,7 +17,7 @@ static int check_g(real_t* x,const real_t g_x_solution){
     else return SUCCESS;
 }
 
-static int check_proxg(real_t* x,const real_t* proxg_x_solution){
+static int check_proxg_point(real_t* x,const real_t* proxg_x_solution){
     unsigned int i;
     real_t initial_value_x[2];initial_value_x[0]=x[0];initial_value_x[1]=x[1]; /* save the inital value, used with printf */
     real_t gamma=0;
@@ -44,49 +44,55 @@ int main(){
 
     data->dimension=2;
     
-    /* test function g(x) */
+     /* test function g(prox(x)) */
+    printf("Testing indicator box: g(prox(x)):Bravo! All tests passed \n");
     real_t x[2]={0,0};
-    if(check_g(x,0.)==FAILURE) return FAILURE;
+    if(check_g_value_at_prox_of_x(x,0.)==FAILURE) return FAILURE;
 
     x[0]=2;x[1]=0;
-    if(check_g(x,0.)==FAILURE) return FAILURE;
+    if(check_g_value_at_prox_of_x(x,0.)==FAILURE) return FAILURE;
 
     x[0]=0;x[1]=2;
-    if(check_g(x,0.)==FAILURE) return FAILURE;
+    if(check_g_value_at_prox_of_x(x,0.)==FAILURE) return FAILURE;
 
     x[0]=-2;x[1]=0;
-    if(check_g(x,0.)==FAILURE) return FAILURE;
+    if(check_g_value_at_prox_of_x(x,0.)==FAILURE) return FAILURE;
 
     x[0]=0;x[1]=-2;
-    if(check_g(x,0.)==FAILURE) return FAILURE;
+    if(check_g_value_at_prox_of_x(x,0.)==FAILURE) return FAILURE;
 
-    /* test function proxg(x) */
+
+    /* test function proxg(x) point */
+    printf("Testing indicator box: proxg(x):Bravo! All tests passed \n");
     real_t x_solution[2]={0,0};
 
     x[0]=0;x[1]=0;
     x_solution[0]=0;x_solution[1]=0;
-    if(check_proxg(x,x_solution)==FAILURE) return FAILURE;
+    if(check_proxg_point(x,x_solution)==FAILURE) return FAILURE;
 
     x[0]=2;x[1]=0;
     x_solution[0]=1;x_solution[1]=0;
-    if(check_proxg(x,x_solution)==FAILURE) return FAILURE;
+    if(check_proxg_point(x,x_solution)==FAILURE) return FAILURE;
 
     x[0]=0;x[1]=2;
     x_solution[0]=0;x_solution[1]=1;
-    if(check_proxg(x,x_solution)==FAILURE) return FAILURE;
+    if(check_proxg_point(x,x_solution)==FAILURE) return FAILURE;
 
     x[0]=-2;x[1]=0;
     x_solution[0]=-1;x_solution[1]=0;
-    if(check_proxg(x,x_solution)==FAILURE) return FAILURE;
+    if(check_proxg_point(x,x_solution)==FAILURE) return FAILURE;
 
     x[0]=0;x[1]=-2;
     x_solution[0]=0;x_solution[1]=-1;
-    if(check_proxg(x,x_solution)==FAILURE) return FAILURE;
+    if(check_proxg_point(x,x_solution)==FAILURE) return FAILURE;
 
     x[0]=-2;x[1]=-2;
     x_solution[0]=-1;x_solution[1]=-1;
-    if(check_proxg(x,x_solution)==FAILURE) return FAILURE;
+    if(check_proxg_point(x,x_solution)==FAILURE) return FAILURE;
 
+
+
+    
     free(data);
 
     return SUCCESS;

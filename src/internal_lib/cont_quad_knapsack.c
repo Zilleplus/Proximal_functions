@@ -71,10 +71,8 @@ void free_cqk_problem(cqk_problem *p) {
 
 /********** Newton method Continuous Quadratic Knapsack problem
             described in the manuscript
-
     R. Cominetti, W. F. Mascarenhas, and Paulo J. S. Silva. "A Newton
     method for the continuous quadratic knapsack problem".
-
 **********/ 
 
 /*
